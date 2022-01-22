@@ -1,5 +1,5 @@
 const cluster = require('cluster')
-const mqemitter = require('./mqemitter-ipfs.js')
+const mqemitter = require('./libs/mqemitter-ipfs.js')
 const crypto = require('crypto')
 
 function startAedes () {
