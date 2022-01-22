@@ -2,7 +2,8 @@ const cluster = require('cluster')
 const mqemitter = require('./libs/mqemitter-ipfs.js')
 const crypto = require('crypto')
 
-function startAedes () {
+
+function startAedes (ipfs_host, ipfs_port) {
   const port = 1883
   let hmac = null;
   const aedes = require('aedes')({
@@ -12,9 +13,11 @@ function startAedes () {
       aedes.publish({ topic: 'aedes/hello/hmac', payload: hmac })
       done(null, true)
     },
-    id: 'BROKER_' + cluster.worker.id,
-    mq: mqemitter({}),
-    //persistence: persistence()
+    id: 'IPFS_BROKER',
+    mq: mqemitter({
+      host: ipfs_host, //'cluster.provider-2.prod.ewr1.akash.pub',
+      port: ipfs_port  //'31105'
+    })
   })
   const server = require('net').createServer(aedes.handle);
 
@@ -49,21 +52,7 @@ function startAedes () {
   })
 }
 
-if (cluster.isMaster) {
-  const numWorkers = 1;//require('os').cpus().length
-  for (let i = 0; i < numWorkers; i++) {
-    cluster.fork()
-  }
+var args = process.argv
 
-  cluster.on('online', function (worker) {
-    console.log('Worker ' + worker.process.pid + ' is online')
-  })
-
-  cluster.on('exit', function (worker, code, signal) {
-    console.log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal)
-    console.log('Starting a new worker')
-    cluster.fork()
-  })
-} else {
-  startAedes()
-}
+console.log(args);
+startAedes(args[2], args[3]);

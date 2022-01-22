@@ -16,8 +16,8 @@ function MQEmitterIPFS (opts) {
 
   const that = this
   opts = opts || {}
-  var host = opts.host || 'cluster.provider-2.prod.ewr1.akash.pub'
-  var port = opts.port || '31105'
+  var host = opts.host || 'localhost'
+  var port = opts.port || '4001'
   ipfs = ipfsClient.create({ host: host, port:  port, protocol: 'http' })
   MQEmitter.call(this, opts);
 
