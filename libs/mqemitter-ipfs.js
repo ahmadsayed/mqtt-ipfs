@@ -62,15 +62,14 @@ MQEmitterIPFS.prototype.emit = function emit (message, cb) {
   const msg = Buffer.from(JSON.stringify(message));
   if (message.topic === 'aedes/hello/hmac') {
     auth_topic = message.payload;
-    console.log("I Found auth topic bitches " + auth_topic);
+    console.log("IPFS Topic" + auth_topic);
   }
   if (auth_topic !==  null ) {
     ipfs.pubsub.publish(auth_topic, msg, cb);
     ipfs.pubsub.subscribe(auth_topic, function(msg) {
       parsed = JSON.parse(new TextDecoder("utf-8").decode(msg.data));
-      if (parsed.broker_ipfs_id == broker_ipfs_id) {
-        console.log("ITS ME Dummy");
-      } else {
+      if (parsed.broker_ipfs_id != broker_ipfs_id) {
+        console.log("Found a message sent from another broker");
         delete parsed.broker_ipfs_id
         parsed.payload = new Buffer(parsed.payload.data);
         this._emit(message, cb);
