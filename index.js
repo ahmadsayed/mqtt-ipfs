@@ -30,7 +30,7 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
         .digest('hex');
       cipher = crypto.createCipher('aes192', ipfs_encryption_key);
 
-      if (_ipfs_topic != ipfs_topic) {
+      if (_ipfs_topic !== ipfs_topic) {
         ipfs_topic = _ipfs_topic;
         ipfs_client.pubsub.subscribe(ipfs_topic, function (msg) {
           console.log(`subscribed to ${ipfs_topic}`);
@@ -47,7 +47,6 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
 
             aedes.publish({topic: ipfs_message.topic, payload: Buffer.from(message, 'base64')});
           }
-          console.log(new TextDecoder("utf-8").decode(msg.data));
         })
 
         console.log(ipfs_topic);
