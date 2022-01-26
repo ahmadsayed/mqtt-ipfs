@@ -32,11 +32,6 @@ inherits(MQEmitterIPFS, MQEmitter)
 
 MQEmitterIPFS.prototype.on = function on (topic, cb, done) {
   this._on(topic, cb, done);
-
-  ipfs.pubsub.subscribe(topic, function(msg) {
-    console.log(topic);
-
-  });
   console.log(`subscribed to ${topic}`)
 
   return this
@@ -59,12 +54,15 @@ MQEmitterIPFS.prototype.emit = function emit (message, cb) {
   const topic = message.topic;//'fruit-of-the-day-546546456'
   console.log(JSON.stringify(message));
   message.broker_ipfs_id = broker_ipfs_id
-  const msg = Buffer.from(JSON.stringify(message));
+    const msg = Buffer.from(JSON.stringify(message));
   if (message.topic === 'aedes/hello/hmac') {
     auth_topic = message.payload;
     console.log("IPFS Topic" + auth_topic);
   }
-  if (auth_topic !==  null ) {
+  if (auth_topic !==  null && message.topic !== 'aedes/hello/hmac') {
+    console.log(auth_topic);
+    console.log("Sending Message" + msg);
+    console.log(auth_topic);
     ipfs.pubsub.publish(auth_topic, msg, cb);
     ipfs.pubsub.subscribe(auth_topic, function(msg) {
       parsed = JSON.parse(new TextDecoder("utf-8").decode(msg.data));
@@ -73,6 +71,8 @@ MQEmitterIPFS.prototype.emit = function emit (message, cb) {
         delete parsed.broker_ipfs_id
         parsed.payload = new Buffer(parsed.payload.data);
         this._emit(message, cb);
+      } else {
+        console.log("Found a message sent from same broker");
       }
     });
   }

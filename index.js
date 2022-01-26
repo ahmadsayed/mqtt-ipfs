@@ -3,12 +3,13 @@ const mqemitter = require('./libs/mqemitter-ipfs.js')
 const crypto = require('crypto')
 
 
-function startAedes (ipfs_host, ipfs_port) {
-  const port = 1883
+function startAedes (ipfs_host, ipfs_port, mqtt_port) {
+  const port = mqtt_port || 1883
   let hmac = null;
   const aedes = require('aedes')({
     authenticate: (client, username, password, done) => {
-      hmac = crypto.createHmac('sha256', username + ":" + password).digest('hex');
+      console.log("authenticated");
+      hmac = crypto.createHmac('sha256', password).update(username).digest('hex');
       console.log(hmac);
       aedes.publish({ topic: 'aedes/hello/hmac', payload: hmac })
       done(null, true)
@@ -55,4 +56,4 @@ function startAedes (ipfs_host, ipfs_port) {
 var args = process.argv
 
 console.log(args);
-startAedes(args[2], args[3]);
+startAedes(args[2], args[3], args[4]);
