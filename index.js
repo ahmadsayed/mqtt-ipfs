@@ -38,7 +38,6 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
           // if message received from remote queue -> publish it here
           // if message recieve from current queue -> ignore
           ipfs_message = JSON.parse(new TextDecoder("utf-8").decode(msg.data));
-          console.log(ipfs_message.message.data);
           if (ipfs_message.bridgeId !== bridgeId) {
             console.log("Recieved message from peer broker");
             console.log("Informing current broker: " + ipfs_message.topic);
