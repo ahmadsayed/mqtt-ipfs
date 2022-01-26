@@ -31,9 +31,22 @@ inherits(MQEmitterIPFS, MQEmitter)
 
 
 MQEmitterIPFS.prototype.on = function on (topic, cb, done) {
-  this._on(topic, cb, done);
-  console.log(`subscribed to ${topic}`)
-
+  this._on(topic, cb);
+  console.log(`subscribed to ${topic}`);
+  if (auth_topic !==  null) {
+    ipfs.pubsub.subscribe(auth_topic, function(msg) {
+      parsed = JSON.parse(new TextDecoder("utf-8").decode(msg.data));
+      if (parsed.broker_ipfs_id != broker_ipfs_id) {
+        console.log("Found a message sent from another broker");
+        delete parsed.broker_ipfs_id
+        parsed.payload = new Buffer(parsed.payload.data);
+        this._emit(message, cb);
+        setImmediate(done)
+      } else {
+        console.log("Found a message sent from same broker");
+      }
+    });
+  }
   return this
 }
 
@@ -64,17 +77,7 @@ MQEmitterIPFS.prototype.emit = function emit (message, cb) {
     console.log("Sending Message" + msg);
     console.log(auth_topic);
     ipfs.pubsub.publish(auth_topic, msg, cb);
-    ipfs.pubsub.subscribe(auth_topic, function(msg) {
-      parsed = JSON.parse(new TextDecoder("utf-8").decode(msg.data));
-      if (parsed.broker_ipfs_id != broker_ipfs_id) {
-        console.log("Found a message sent from another broker");
-        delete parsed.broker_ipfs_id
-        parsed.payload = new Buffer(parsed.payload.data);
-        this._emit(message, cb);
-      } else {
-        console.log("Found a message sent from same broker");
-      }
-    });
+
   }
 
 
