@@ -88,7 +88,7 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
   // fired when a message is published
   aedes.on('publish', async function (packet, client) {
     if (client == null) {
-      console.log("Do not publish to IPFS");
+      console.log("Internal Message ... do not publish to IPFS");
     } else {
       base64_message = Buffer.from(packet.payload).toString('base64');
       hashed_base64_message = crypto.createHash('sha256').update(base64_message).digest('hex');
