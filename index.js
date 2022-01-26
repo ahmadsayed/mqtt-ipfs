@@ -21,7 +21,7 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
   let hmac = null;
   const aedes = require('aedes')({
     authenticate: (client, username, password, done) => {
-      ipfs_topic = crypto.createHmac('sha256', password)
+      _ipfs_topic = crypto.createHmac('sha256', password)
         .update(username)
         .digest('hex');
 
@@ -30,28 +30,31 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
         .digest('hex');
       cipher = crypto.createCipher('aes192', ipfs_encryption_key);
 
-      ipfs_client.pubsub.subscribe(ipfs_topic, function (msg) {
-        console.log(`subscribed to ${ipfs_topic}`);
-        //Message recieve from remote queue or current queue
-        // if message received from remote queue -> publish it here
-        // if message recieve from current queue -> ignore
-        ipfs_message = JSON.parse(new TextDecoder("utf-8").decode(msg.data));
-        console.log(ipfs_message.message.data);
-        if (ipfs_message.bridgeId !== bridgeId) {
-          console.log("Recieved message from peer broker");
-          console.log("Informing current broker: " + ipfs_message.topic);
+      if (_ipfs_topic != ipfs_topic) {
+        ipfs_topic = _ipfs_topic;
+        ipfs_client.pubsub.subscribe(ipfs_topic, function (msg) {
+          console.log(`subscribed to ${ipfs_topic}`);
+          //Message recieve from remote queue or current queue
+          // if message received from remote queue -> publish it here
+          // if message recieve from current queue -> ignore
+          ipfs_message = JSON.parse(new TextDecoder("utf-8").decode(msg.data));
           console.log(ipfs_message.message.data);
-          buffer = new TextDecoder("utf-8").decode(Buffer.from(ipfs_message.message.data));
-          message = Buffer.from(buffer.split('.')[0]).toString('ascii');
+          if (ipfs_message.bridgeId !== bridgeId) {
+            console.log("Recieved message from peer broker");
+            console.log("Informing current broker: " + ipfs_message.topic);
+            buffer = new TextDecoder("utf-8").decode(Buffer.from(ipfs_message.message.data));
+            message = Buffer.from(buffer.split('.')[0]).toString('ascii');
 
-          aedes.publish({topic: ipfs_message.topic, payload: Buffer.from(message, 'base64')});
-        }
-        console.log(new TextDecoder("utf-8").decode(msg.data));
-      })
+            aedes.publish({topic: ipfs_message.topic, payload: Buffer.from(message, 'base64')});
+          }
+          console.log(new TextDecoder("utf-8").decode(msg.data));
+        })
 
-      console.log(ipfs_topic);
-      console.log(ipfs_encryption_key);
-      done(null, true)
+        console.log(ipfs_topic);
+        console.log(ipfs_encryption_key);
+        done(null, true)
+      }
+
     },
     id: 'IPFS_BROKER'
   });
