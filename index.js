@@ -12,7 +12,7 @@ cipher = null;
 const bridgeId = crypto.randomUUID();
 
 const ipfs_client = ipfsClient.create({
-  host: "localhost", port: "1880", protocol: 'http'
+  host: "localhost", port: "5001", protocol: 'http'
 })
 
 var hmac = null;
