@@ -21,7 +21,6 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
   let hmac = null;
   const aedes = require('aedes')({
     authenticate: (client, username, password, done) => {
-      console.log("authenticated");
       ipfs_topic = crypto.createHmac('sha256', password)
         .update(username)
         .digest('hex');
@@ -43,14 +42,8 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
           console.log("Informing current broker: " + ipfs_message.topic);
           console.log(ipfs_message.message.data);
           buffer = new TextDecoder("utf-8").decode(Buffer.from(ipfs_message.message.data));
-          console.log(buffer);
-          console.log('-------------------');
           message = Buffer.from(buffer.split('.')[0]).toString('ascii');
-          console.log(message);
-          // Publish to Internal topic, this topic will not be propgated to IPFS
-	  //aedes.publish({ topic: 'aedes/hello', payload: "I'm broker " + aedes.id })
 
-          //aedes.publish({topic: 'TEST', payload:'TEST'});
           aedes.publish({topic: ipfs_message.topic, payload: Buffer.from(message, 'base64')});
         }
         console.log(new TextDecoder("utf-8").decode(msg.data));
@@ -74,8 +67,7 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
 
   aedes.on('subscribe', function (subscriptions, client) {
     console.log('MQTT client \x1b[32m' + (client ? client.id : client) +
-            '\x1b[0m subscribed to topics: ' + subscriptions.map(s => s.topic).join('\n'), 'from broker',
-aedes.id)
+            '\x1b[0m subscribed to topics: ' + subscriptions.map(s => s.topic).join('\n'), 'from broker',aedes.id)
   })
 
   aedes.on('unsubscribe', function (subscriptions, client) {
@@ -95,12 +87,8 @@ aedes.id)
 
   // fired when a message is published
   aedes.on('publish', async function (packet, client) {
-    console.log("$$$$$$");
-    console.log(client);
-
     if (client == null) {
       console.log("Do not publish to IPFS");
-
     } else {
       base64_message = Buffer.from(packet.payload).toString('base64');
       hashed_base64_message = crypto.createHash('sha256').update(base64_message).digest('hex');
