@@ -47,11 +47,10 @@ function startAedes (ipfs_host, ipfs_port, mqtt_port) {
             aedes.publish({topic: ipfs_message.topic, payload: Buffer.from(message, 'base64')});
           }
         })
-
-        console.log(ipfs_topic);
-        console.log(ipfs_encryption_key);
-        done(null, true)
       }
+      console.log(ipfs_topic);
+      done(null, true)
+      
 
     },
     id: 'IPFS_BROKER'
